@@ -84,6 +84,26 @@ def call_llm(resume, description: str) -> str:
     return content if content is not None else ""
 
 
+def send_image_resume(
+    send_image_button="send_image_button.png",
+    imagelib_button="imagelib_button.png",
+    resume_image="resume_image.png",
+):
+    button_location = pyautogui.locateOnScreen(send_image_button, confidence=0.9)
+    if button_location:
+        button_x, button_y = pyautogui.center(button_location)
+        # 模拟人类平滑移动并点击
+        human_curve_move(button_x, button_y)
+        pyautogui.click()
+        time.sleep(1.5)
+        # pyautogui.write(r"C:\Users\wjjsn\Pictures\resume.png")
+        pyperclip.copy(r"C:\Users\wjjsn\Pictures\resume.png")
+        pyautogui.hotkey("ctrl", "v")
+        pyautogui.press("enter")
+        # pyautogui.hotkey("alt", "o")
+    return False
+
+
 def process_single_url(
     url,
     llm_result,
