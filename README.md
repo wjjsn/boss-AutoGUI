@@ -11,6 +11,8 @@
 
 ## 效果演示
 
+<img width="1080" height="506" alt="output" src="https://github.com/user-attachments/assets/e2ad4d3d-fe9d-4b69-950b-fbbbf1929173" />
+
 
 ## 环境配置
 
