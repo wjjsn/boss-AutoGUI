@@ -41,21 +41,21 @@ def bezier_curve(
     )
 
 
-def human_curve_move(target_x: float, target_y: float, duration: float = 0.8) -> None:
+def human_curve_move(target_x: float, target_y: float, duration: float = 0.3):
     start = pyautogui.position()
 
     # 控制点：在起点和终点之间随机偏移，形成曲线
     ctrl_x = (start[0] + target_x) / 2 + random.randint(-150, 150)
     ctrl_y = (start[1] + target_y) / 2 + random.randint(-100, 100)
 
-    steps = max(20, int(duration * 60))  # 按帧数平滑移动
+    steps = max(15, int(duration * 60))
     for i in range(steps):
         t = i / steps
         # 应用缓动让曲线移动也带速度变化
         t_eased = pyautogui.easeInOutQuad(t)
         x, y = bezier_curve(start, (target_x, target_y), (ctrl_x, ctrl_y), t_eased)
-        pyautogui.moveTo(x, y, duration=0.01)  # 微小步进移动
-        time.sleep(duration / steps)
+        pyautogui.moveTo(x, y)
+        time.sleep(duration / steps)  # 仅保留一个可控延迟
 
 
 def call_llm(resume, description: str) -> str:
