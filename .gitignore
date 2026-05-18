@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+.zed/
+.env
+AGENTS.md
+boss_jobs.json
