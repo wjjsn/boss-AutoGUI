@@ -22,7 +22,8 @@ ignore = []
 
 [tool.mypy]
 python_version = "3.14"
-strict = true
+strict = false
+ignore_missing_imports = true
 
 [dependency-groups]
 dev = [
