@@ -1,21 +1,18 @@
-import webbrowser
-import time
-import os
-import sys
-import pyautogui
-import traceback
-import random
 import json
+import os
+import random
+import sys
+import time
+import traceback
+import webbrowser
+
+import numpy as np
+import pyautogui
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# 开启安全保护：鼠标移动到屏幕左上角 (0,0) 可立即停止脚本
 pyautogui.FAILSAFE = True
 
-import numpy as np
-from scipy.interpolate import splprep, splev
-
-# 从 .env 文件加载环境变量
 load_dotenv()
 
 BASRURL = os.getenv("BASRURL")
@@ -25,12 +22,21 @@ APIKEY = os.getenv("APIKEY")
 client = OpenAI(api_key=APIKEY, base_url=BASRURL)
 
 
-def bezier_curve(p0, p1, p2, t):
-    """简单二次贝塞尔曲线"""
-    return (1-t)**2 * np.array(p0) + 2*(1-t)*t * np.array(p2) + t**2 * np.array(p1)
+def bezier_curve(
+    p0: tuple[float, float],
+    p1: tuple[float, float],
+    p2: tuple[float, float],
+    t: float,
+) -> np.ndarray:
+    """Simple quadratic Bézier curve."""
+    return (
+        (1 - t) ** 2 * np.array(p0)
+        + 2 * (1 - t) * t * np.array(p2)
+        + t**2 * np.array(p1)
+    )
 
 
-def human_curve_move(target_x, target_y, duration=0.8):
+def human_curve_move(target_x: float, target_y: float, duration: float = 0.8) -> None:
     start = pyautogui.position()
 
     # 控制点：在起点和终点之间随机偏移，形成曲线
@@ -47,19 +53,26 @@ def human_curve_move(target_x, target_y, duration=0.8):
         time.sleep(duration / steps)
 
 
-def call_llm(description):
+def call_llm(description: str) -> str:
     """调用 LLM API 处理职位描述"""
     response = client.chat.completions.create(
         model="deepseek-v4-flash",
         messages=[
             {"role": "system", "content": "不准回复markdown，只准回复纯文本。"},
-            {"role": "user", "content": description}
-        ]
+            {"role": "user", "content": description},
+        ],
     )
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    return content if content is not None else ""
 
 
-def process_single_url(url, llm_result, button_image='button.png', delay_load=5, delay_click=2):
+def process_single_url(
+    url,
+    llm_result,
+    button_image="button.png",
+    delay_load=5,
+    delay_click=2,
+):
     print(f"\n正在处理网址: {url}")
 
     # 1. 打开默认浏览器
@@ -91,31 +104,29 @@ def process_single_url(url, llm_result, button_image='button.png', delay_load=5,
         print(f" -> 操作异常: {e}")
         traceback.format_exc()
 
-
-
     # 4. 等待请求发送完毕，然后关闭当前标签页
     time.sleep(delay_click)
-    pyautogui.hotkey('ctrl', 'w')
+    pyautogui.hotkey("ctrl", "w")
 
     return clicked
 
 
 def main():
-    json_file = 'boss_jobs.json'
+    json_file = "boss_jobs.json"
     if not os.path.exists(json_file):
         print(f"错误: 找不到 {json_file} 文件，请在同级目录下创建。")
         sys.exit(1)
 
     # 从 JSON 文件读取数据
-    with open(json_file, 'r', encoding='utf-8') as f:
+    with open(json_file, encoding="utf-8") as f:
         jobs = json.load(f)
 
     print(f"已加载 {len(jobs)} 个任务，准备开始批处理...")
     time.sleep(2)  # 给用户2秒钟准备，不要动鼠标
 
     for index, job in enumerate(jobs, 1):
-        url = job.get('url')
-        description = job.get('description', '')
+        url = job.get("url")
+        description = job.get("description", "")
 
         # 调用 LLM 处理职位描述
         print(f"\n[{index}/{len(jobs)}] 调用LLM...")
@@ -125,7 +136,7 @@ def main():
         time.sleep(1)
 
         print(f"进度: [{index}/{len(jobs)}]")
-        process_single_url(url,llm_result)
+        process_single_url(url, llm_result)
         # 每个网页任务之间稍微停顿，防止浏览器卡死
         time.sleep(random.randint(1, 10))
 
