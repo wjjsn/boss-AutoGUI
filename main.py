@@ -8,6 +8,7 @@ import webbrowser
 
 import numpy as np
 import pyautogui
+import pyperclip
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -105,11 +106,7 @@ def send_image_resume(
 
 
 def process_single_url(
-    url,
-    llm_result,
-    button_image="button.png",
-    delay_load=5,
-    delay_click=2,
+    url, llm_result, lijigbts_button="lijigbts_button.png", delay_load=5
 ):
     print(f"\n正在处理网址: {url}")
 
@@ -122,28 +119,84 @@ def process_single_url(
     clicked = False
     try:
         # 3. 尝试图像识别定位按钮
-        # 确保提前截好了按钮图保存为 button.png
-        button_location = pyautogui.locateOnScreen(button_image, confidence=0.9)
+        button_location = pyautogui.locateOnScreen(lijigbts_button, confidence=0.9)
 
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
-            human_curve_move(button_x, button_y, duration=0.8)
+            human_curve_move(
+                button_x + random.uniform(-25, 25), button_y + random.uniform(-25, 25)
+            )
             pyautogui.click()
-            print(" -> 点击成功！")
-            clicked = True
-        else:
-            print(" -> 未在屏幕上找到目标按钮，尝试使用固定坐标（备份方案）...")
-            # 如果按钮位置绝对固定，可以取消下行注释
-            # pyautogui.click(x=500, y=400)
-            print("未找到目标按钮")
+            print(" -> 立即沟通点击成功！")
+            time.sleep(1)
 
+    except pyautogui.ImageNotFoundException:
+        print(" -> 无立即沟通按钮，跳过")
+        return False
     except Exception as e:
         print(f" -> 操作异常: {e}")
-        traceback.format_exc()
+        traceback.print_exc()
+    try:
+        button_location = pyautogui.locateOnScreen(
+            "close_after_lijigbts.png", confidence=0.98
+        )
+
+        if button_location:
+            button_x, button_y = pyautogui.center(button_location)
+            # 模拟人类平滑移动并点击
+            human_curve_move(
+                button_x + random.uniform(-10, 10), button_y + random.uniform(-10, 10)
+            )
+            pyautogui.click()
+            print(" -> 关闭对话框成功！")
+            time.sleep(1)
+
+    except pyautogui.ImageNotFoundException:
+        print(" -> 无关闭对话按钮，错误")
+    except Exception as e:
+        print(f" -> 操作异常: {e}")
+        traceback.print_exc()
+    try:
+        button_location = pyautogui.locateOnScreen(
+            "jixugbts_button.png", confidence=0.9
+        )
+        if button_location:
+            button_x, button_y = pyautogui.center(button_location)
+            # 模拟人类平滑移动并点击
+            human_curve_move(
+                button_x + random.uniform(-25, 25), button_y + random.uniform(-25, 25)
+            )
+            pyautogui.click()
+            print(" -> 继续沟通点击成功！")
+            time.sleep(1)
+    except pyautogui.ImageNotFoundException:
+        print(" -> 无继续沟通按钮，错误")
+    except Exception as e:
+        print(f" -> 操作异常: {e}")
+        traceback.print_exc()
+    time.sleep(1)
+    send_image_resume()
+    time.sleep(1)
+    pyperclip.copy(llm_result)
+    try:
+        button_location = pyautogui.locateOnScreen(
+            "send_image_button.png", confidence=0.9
+        )
+        if button_location:
+            button_x, button_y = pyautogui.center(button_location)
+            # 模拟人类平滑移动并点击
+            human_curve_move(button_x + random.uniform(-25, 25), button_y + 100)
+            pyautogui.click()
+    except pyautogui.ImageNotFoundException:
+        print(" -> 无法输入，错误")
+    pyautogui.hotkey("ctrl", "v")
+    time.sleep(random.uniform(1.0, 3.0))
+    pyautogui.press("enter")
+    time.sleep(random.uniform(1.0, 3.0))
+    clicked = True
 
     # 4. 等待请求发送完毕，然后关闭当前标签页
-    time.sleep(delay_click)
     pyautogui.hotkey("ctrl", "w")
 
     return clicked
@@ -173,9 +226,9 @@ def main():
 
         time.sleep(1)
 
-        # process_single_url(url, llm_result)
+        process_single_url(url, llm_result)
         # 每个网页任务之间稍微停顿，防止浏览器卡死
-        time.sleep(random.randint(1, 10))
+        # time.sleep(random.randint(1, 10))
 
     print("\n所有批处理任务已完成！")
 
