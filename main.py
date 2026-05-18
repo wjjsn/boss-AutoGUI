@@ -17,6 +17,11 @@ load_dotenv()
 
 BASRURL = os.getenv("BASRURL")
 APIKEY = os.getenv("APIKEY")
+RESUME = os.getenv("RESUME")
+if RESUME is None:
+    raise ValueError("RESUME environment variable is not set")
+else:
+    RESUME = RESUME.replace("\\n", "\n")
 
 # 初始化 OpenAI 客户端
 client = OpenAI(api_key=APIKEY, base_url=BASRURL)
@@ -53,12 +58,25 @@ def human_curve_move(target_x: float, target_y: float, duration: float = 0.8) ->
         time.sleep(duration / steps)
 
 
-def call_llm(description: str) -> str:
+def call_llm(resume, description: str) -> str:
     """调用 LLM API 处理职位描述"""
     response = client.chat.completions.create(
         model="deepseek-v4-flash",
         messages=[
-            {"role": "system", "content": "不准回复markdown，只准回复纯文本。"},
+            {
+                "role": "system",
+                "content": f"""你是一名有十年经验的简历优化师。
+我现在需要求职，所以请你来写求职招呼语来向boss或hr打招呼，你需要代入我的身份也就是一名求职者。注意！打招呼语的前20个字最重要，前20个字一定要突显我对这个岗位的掌握情况，前20个字一定要吸睛，让老板想招我！不要啰哩叭嗦，注意你面对的是老板，不是我。你说的话会直接发送给boss或hr，所以不要回复markdown，只准回复纯文本。
+## 我的简历:
+```
+{resume}
+```
+## 我的职位描述:
+```
+{description}
+```
+""",
+            },
             {"role": "user", "content": description},
         ],
     )
@@ -130,13 +148,12 @@ def main():
 
         # 调用 LLM 处理职位描述
         print(f"\n[{index}/{len(jobs)}] 调用LLM...")
-        llm_result = call_llm(description)
+        llm_result = call_llm(RESUME, description)
         print(f"LLM返回: {llm_result}")
 
         time.sleep(1)
 
-        print(f"进度: [{index}/{len(jobs)}]")
-        process_single_url(url, llm_result)
+        # process_single_url(url, llm_result)
         # 每个网页任务之间稍微停顿，防止浏览器卡死
         time.sleep(random.randint(1, 10))
 
