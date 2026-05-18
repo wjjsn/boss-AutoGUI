@@ -25,6 +25,7 @@
 ## 运行
 
 ```bash
+uv.exe sync #先同步环境
 uv.exe run main.py
 ```
 
