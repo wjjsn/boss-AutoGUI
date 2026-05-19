@@ -12,3 +12,4 @@ wheels/
 .env
 AGENTS.md
 boss_jobs.json
+processed_urls.txt
