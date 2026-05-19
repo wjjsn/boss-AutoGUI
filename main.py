@@ -59,6 +59,16 @@ def human_curve_move(target_x: float, target_y: float, duration: float = 0.3):
         time.sleep(duration / steps)  # 仅保留一个可控延迟
 
 
+def random_move() -> None:
+    """随机移动鼠标"""
+    for _ in range(random.randint(3, 5)):
+        human_curve_move(
+            random.randint(0, 1920),
+            random.randint(0, 1080),
+            duration=random.uniform(0.3, 0.8),
+        )
+
+
 def call_llm(resume, description: str) -> str:
     """调用 LLM API 处理职位描述"""
     response = client.chat.completions.create(
@@ -101,9 +111,10 @@ def send_image_resume(
     if button_location:
         button_x, button_y = pyautogui.center(button_location)
         # 模拟人类平滑移动并点击
+        random_move()
         human_curve_move(button_x, button_y)
         pyautogui.click()
-        time.sleep(1.5)
+        time.sleep(random.uniform(1, 2))
         # pyautogui.write(r"C:\Users\wjjsn\Pictures\resume.png")
         pyperclip.copy(r"C:\Users\wjjsn\Pictures\resume.png")
         pyautogui.hotkey("ctrl", "v")
@@ -121,7 +132,7 @@ def process_single_url(
     webbrowser.open(url)
 
     # 2. 等待网页加载完成
-    time.sleep(delay_load)
+    time.sleep(delay_load+random.uniform(1, 2))
 
     clicked = False
     try:
@@ -131,12 +142,13 @@ def process_single_url(
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
+            random_move()
             human_curve_move(
-                button_x + random.uniform(-25, 25), button_y + random.uniform(-25, 25)
+                button_x + random.uniform(-75, 75), button_y + random.uniform(-25, 25)
             )
             pyautogui.click()
             print(" -> 立即沟通点击成功！")
-            time.sleep(1)
+            time.sleep(random.uniform(1, 2))
 
     except pyautogui.ImageNotFoundException:
         print(" -> 无立即沟通按钮，跳过")
@@ -152,12 +164,13 @@ def process_single_url(
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
+            random_move()
             human_curve_move(
                 button_x + random.uniform(-10, 10), button_y + random.uniform(-10, 10)
             )
             pyautogui.click()
             print(" -> 关闭对话框成功！")
-            time.sleep(1)
+            time.sleep(random.uniform(1, 2))
 
     except pyautogui.ImageNotFoundException:
         print(" -> 无关闭对话按钮，错误")
@@ -171,20 +184,21 @@ def process_single_url(
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
+            random_move()
             human_curve_move(
-                button_x + random.uniform(-25, 25), button_y + random.uniform(-25, 25)
+                button_x + random.uniform(-75, 75), button_y + random.uniform(-25, 25)
             )
             pyautogui.click()
             print(" -> 继续沟通点击成功！")
-            time.sleep(1)
+            time.sleep(random.uniform(1, 2))
     except pyautogui.ImageNotFoundException:
         print(" -> 无继续沟通按钮，错误")
     except Exception as e:
         print(f" -> 操作异常: {e}")
         traceback.print_exc()
-    time.sleep(1)
+    time.sleep(random.uniform(1, 2))
     send_image_resume()
-    time.sleep(1)
+    time.sleep(random.uniform(1, 2))
     pyperclip.copy(llm_result)
     try:
         button_location = pyautogui.locateOnScreen(
@@ -193,6 +207,7 @@ def process_single_url(
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
+            random_move()
             human_curve_move(
                 button_x + random.uniform(-25, 25), button_y + random.uniform(100, 150)
             )
@@ -252,8 +267,6 @@ def main():
         print(f"\n[{index}/{len(jobs)}] 调用LLM...")
         llm_result = call_llm(RESUME, description)
         print(f"LLM返回: {llm_result}")
-
-        time.sleep(1)
 
         process_single_url(url, llm_result)
         save_processed_url(url)
