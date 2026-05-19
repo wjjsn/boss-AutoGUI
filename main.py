@@ -193,7 +193,9 @@ def process_single_url(
         if button_location:
             button_x, button_y = pyautogui.center(button_location)
             # 模拟人类平滑移动并点击
-            human_curve_move(button_x + random.uniform(-25, 25), button_y + 100)
+            human_curve_move(
+                button_x + random.uniform(-25, 25), button_y + random.uniform(100, 150)
+            )
             pyautogui.click()
     except pyautogui.ImageNotFoundException:
         print(" -> 无法输入，错误")
@@ -209,6 +211,18 @@ def process_single_url(
     return clicked
 
 
+def load_processed_urls(filename="processed_urls.txt"):
+    if os.path.exists(filename):
+        with open(filename, encoding="utf-8") as f:
+            return set(line.strip() for line in f if line.strip())
+    return set()
+
+
+def save_processed_url(url, filename="processed_urls.txt"):
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write(url + "\n")
+
+
 def main():
     json_file = "boss_jobs.json"
     if not os.path.exists(json_file):
@@ -219,11 +233,19 @@ def main():
     with open(json_file, encoding="utf-8") as f:
         jobs = json.load(f)
 
-    print(f"已加载 {len(jobs)} 个任务，准备开始批处理...")
-    time.sleep(2)  # 给用户2秒钟准备，不要动鼠标
+    processed_urls = load_processed_urls()
+    print(
+        f"已加载 {len(jobs)} 个任务，已处理 {len(processed_urls)} 个，准备开始批处理..."
+    )
+    time.sleep(2)
 
     for index, job in enumerate(jobs, 1):
         url = job.get("url")
+
+        if url in processed_urls:
+            print(f"\n[{index}/{len(jobs)}] URL已处理过，跳过: {url}")
+            continue
+
         description = job.get("description", "")
 
         # 调用 LLM 处理职位描述
@@ -234,8 +256,8 @@ def main():
         time.sleep(1)
 
         process_single_url(url, llm_result)
-        # 每个网页任务之间稍微停顿，防止浏览器卡死
-        # time.sleep(random.randint(1, 10))
+        save_processed_url(url)
+        processed_urls.add(url)
 
     print("\n所有批处理任务已完成！")
 
